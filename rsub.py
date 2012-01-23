@@ -1,7 +1,9 @@
 import sublime, sublime_plugin
 import SocketServer
-import signal, os
+import signal, os, tempfile
 from threading import Thread
+
+''' RECAP: view.set_name crashes when opened with a file. Test without tempfile? Other way to set name? '''
 
 class Session:
 	def __init__(self, socket):
@@ -11,6 +13,7 @@ class Session:
 		self.in_file = False
 		self.parse_done = False
 		self.socket = socket
+		self.tmp_file = None
 	
 	def parse_input(self, input_line):
 		if(input_line.strip() == "open" or self.parse_done == True): return
@@ -48,11 +51,15 @@ class Session:
 		self.socket.send("\r\n")
 
 	def on_done(self):
-		view = sublime.active_window().new_file()
-		view.set_name(self.env['display-name'])
-		edit = view.begin_edit()
-		view.insert(edit, 0, self.file.decode("utf8"))
-		view.end_edit(edit)
+		# Create temp file
+		self.tmp_file = tempfile.NamedTemporaryFile()
+
+		print '[rsub] Temp name: ' + self.tmp_file.name
+
+		# Open it within sublime
+		view = sublime.active_window().open_file(self.tmp_file.name)
+		#view.set_name(self.env['display-name'])
+		view.set_name('koko')
 			
 
 class ConnectionHandler(SocketServer.BaseRequestHandler):
@@ -69,7 +76,7 @@ class ConnectionHandler(SocketServer.BaseRequestHandler):
 			session.parse_input(line)
 
 		self.request.close()
-		print '[rsub] Connection close..';
+		print '[rsub] Connection close..'
 
 
 class TCPServer(SocketServer.ThreadingTCPServer):
@@ -94,8 +101,8 @@ class RSubEventListener(sublime_plugin.EventListener):
 
 # Load settings
 settings = sublime.load_settings("rsub.sublime-settings")
-port = s.get("port", 4444)
-host = s.get("host", "localhost")
+port = settings.get("port", 4444)
+host = settings.get("host", "localhost")
 
 # Start server thread
 server = TCPServer((host, port), ConnectionHandler)
