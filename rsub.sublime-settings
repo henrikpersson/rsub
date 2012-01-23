@@ -1,0 +1,17 @@
+/*
+    rsub default settings
+*/
+{
+    /*
+        rsub listen port
+    */
+    "port": 4444,
+
+    /*
+        rsub listen host
+
+        WARNING: it's NOT recommended to change this option,
+        use SSH tunneling instead.
+    */
+    "host": "localhost"
+}
