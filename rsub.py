@@ -97,15 +97,15 @@ class RSubEventListener(sublime_plugin.EventListener):
 			server.shutdown()
 			server.server_close()
 
-##### Main #####
 
-# Load settings
-settings = sublime.load_settings("rsub.sublime-settings")
-port = settings.get("port", 4444)
-host = settings.get("host", "localhost")
+if __name__ == '__main__': # Does this work in sublime?
+	# Load settings
+	settings = sublime.load_settings("rsub.sublime-settings")
+	port = settings.get("port", 4444)
+	host = settings.get("host", "localhost")
 
-# Start server thread
-server = TCPServer((host, port), ConnectionHandler)
-Thread(target=start_server, args=[]).start()
-print '[rsub] Server running on port ' + host + ':' + str(port) + '...'
+	# Start server thread
+	server = TCPServer((host, port), ConnectionHandler)
+	Thread(target=start_server, args=[]).start()
+	print '[rsub] Server running on port ' + host + ':' + str(port) + '...'
 
