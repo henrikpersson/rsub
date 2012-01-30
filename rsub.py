@@ -137,7 +137,7 @@ class RSubEventListener(sublime_plugin.EventListener):
 
 # Load settings
 settings = sublime.load_settings("rsub.sublime-settings")
-port = settings.get("port", 4444)
+port = settings.get("port", 52698)
 host = settings.get("host", "localhost")
 
 # Start server thread

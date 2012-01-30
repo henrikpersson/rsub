@@ -17,7 +17,7 @@
                         [
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/rsub/Base File.sublime-settings"},
+                                "args": {"file": "${packages}/rsub/rsub.sublime-settings"},
                                 "caption": "Settings – Default"
                             },
                             { "caption": "-" }

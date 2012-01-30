@@ -5,7 +5,7 @@
     /*
         rsub listen port
     */
-    "port": 4444,
+    "port": 52698,
 
     /*
         rsub listen host
