@@ -1,6 +1,9 @@
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
 import SocketServer
-import signal, os, tempfile, socket
+import os
+import tempfile
+import socket
 from threading import Thread
 
 '''
@@ -11,9 +14,11 @@ If rmate doesn't open a file in the working dir the slashes will mess up our tem
 
 SESSIONS = {}
 
+
 def say(msg):
     #sublime.status_message("[rsub] " + msg)
     print '{rsub] ' + msg
+
 
 class Session:
     def __init__(self, socket):
@@ -24,13 +29,15 @@ class Session:
         self.parse_done = False
         self.socket = socket
         self.temp_path = None
-    
+
     def parse_input(self, input_line):
-        if(input_line.strip() == "open" or self.parse_done == True): return
+        if (input_line.strip() == "open" or self.parse_done == True):
+            return
 
         if(self.in_file == False):
             input_line = input_line.strip()
-            if(input_line == ""): return
+            if (input_line == ""):
+                return
             k, v = input_line.split(":", 1)
             if(k == "data"):
                 self.file_size = int(v)
@@ -47,7 +54,7 @@ class Session:
             sublime.set_timeout(self.on_done, 0)
         else:
             self.file += line
-    
+
     def send_close(self):
         self.socket.send("close\n")
         self.socket.send("token: " + self.env['token'] + "\n")
@@ -65,10 +72,9 @@ class Session:
         self.socket.send(new_file)
         self.socket.send("\n")
 
-
     def on_done(self):
         # Create temp file
-        self.temp_path = tempfile.gettempdir() + self.env['display-name'];
+        self.temp_path = tempfile.gettempdir() + self.env['display-name']
 
         temp_file = open(self.temp_path, "w+")
         temp_file.write(self.file.strip())
@@ -83,7 +89,7 @@ class Session:
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         del SESSIONS[view.id()]
-            
+
 
 class ConnectionHandler(SocketServer.BaseRequestHandler):
     def handle(self):
@@ -95,7 +101,8 @@ class ConnectionHandler(SocketServer.BaseRequestHandler):
         socket_fd = self.request.makefile()
         while True:
             line = socket_fd.readline()
-            if(len(line) == 0): break
+            if(len(line) == 0):
+                break
             session.parse_input(line)
 
         #self.request.close()
@@ -121,13 +128,13 @@ class RSubEventListener(sublime_plugin.EventListener):
             server.server_close()
 
     def on_post_save(self, view):
-        if(SESSIONS.has_key(view.id())):
+        if (view.id() in SESSIONS):
             sess = SESSIONS[view.id()]
             sess.send_save()
             say('Saved ' + sess.env['display-name'])
 
     def on_close(self, view):
-        if(SESSIONS.has_key(view.id())):
+        if(view.id() in SESSIONS):
             sess = SESSIONS[view.id()]
             sess.send_close()
             os.unlink(sess.temp_path)
@@ -144,4 +151,3 @@ host = settings.get("host", "localhost")
 server = TCPServer((host, port), ConnectionHandler)
 Thread(target=start_server, args=[]).start()
 say('Server running on ' + host + ':' + str(port) + '...')
-
