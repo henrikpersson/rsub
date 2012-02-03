@@ -138,6 +138,12 @@ class RSubEventListener(sublime_plugin.EventListener):
             sess.send_save()
             say('Saved ' + sess.env['display-name'])
 
+        if os.path.basename(view.file_name()) == 'rsub.py':
+            say('Starting new server instance')
+            global server
+            server = TCPServer((host, port), ConnectionHandler)
+            Thread(target=start_server, args=[]).start()
+
     def on_close(self, view):
         if(view.id() in SESSIONS):
             sess = SESSIONS[view.id()]
