@@ -9,15 +9,14 @@ from threading import Thread
 '''
 Problems:
 Double line breaks on Windows.
-If rmate doesn't open a file in the working dir the slashes will mess up our tempfile.
+If rmate opens two files with the same name in different directories, our temp files will be messed up.
 '''
 
 SESSIONS = {}
 
 
 def say(msg):
-    #sublime.status_message("[rsub] " + msg)
-    print '{rsub] ' + msg
+    print '[rsub] ' + msg
 
 
 class Session:
@@ -74,12 +73,19 @@ class Session:
 
     def on_done(self):
         # Create temp file
-        self.temp_path = tempfile.gettempdir() + self.env['display-name']
+        self.temp_path = os.path.join(tempfile.gettempdir(), os.path.basename(self.env['display-name']))
 
-        temp_file = open(self.temp_path, "w+")
-        temp_file.write(self.file.strip())
-        temp_file.flush()
-        temp_file.close()
+        try:
+            temp_file = open(self.temp_path, "w+")
+            temp_file.write(self.file.strip())
+            temp_file.flush()
+            temp_file.close()
+        except IOError, e:
+            # Remove the file if it exists.
+            if os.path.exists(self.temp_path):
+                os.remove(self.temp_path)
+
+            sublime.error_message('Failed to write to temp file! Error: %s' % str(e))
 
         # Open it within sublime
         view = sublime.active_window().open_file(self.temp_path)
