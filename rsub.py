@@ -105,8 +105,7 @@ class ConnectionHandler(SocketServer.BaseRequestHandler):
                 break
             session.parse_input(line)
 
-        #self.request.close()
-        say('Connection close..')
+        say('Connection close.')
 
 
 class TCPServer(SocketServer.ThreadingTCPServer):
