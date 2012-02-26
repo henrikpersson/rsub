@@ -13,8 +13,15 @@ scp, sftp, or plain FTP. See the README file inside rmate-bash for more detail.
 
 ## Installation
 
-You can simply clone this repository into the Sublime Text 2 'Packages'
-directory.
+You can install this plugin using sublime package control.
+It will keep all your plugins up to date.
+http://wbond.net/sublime_packages/package_control
+
+-------------------------
+OR
+
+You can also clone this repository into the Sublime Text 2 'Packages'
+directory, but you will have to update it manually.
 
 On Mac OS X, this is located at
 `~/Library/Application Support/Sublime Text 2/Packages`.
