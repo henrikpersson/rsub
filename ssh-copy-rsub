@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# Shell script to install rsub on the remove server so we can open shell scripts locally.
+# Author: Leon Radley (http://github.com/leon)
+
+URL="https://raw.github.com/avian/rmate/master/rmate"
+
+if [ "$#" -gt 1 ] || [ "$1" = "-b" ] || [ "$1" = "--bash" ]; then
+	shift
+	URL="https://raw.github.com/aurora/rmate/master/rmate.sh"
+fi
+
+if [ "$#" -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+
+cat <<EOF
+Usage: $0 [--bash] [user@]machine
+
+# Install Sublime Text plugin
+https://github.com/Drarok/rsub
+
+# Setup ssh for easy access
+edit ~/.ssh/config
+
+# The automatic forwarding
+RemoteForward 52698 localhost:52698
+
+# Standard user, so you can do ssh servername instead of root@servername
+User root
+
+# Custom aliases
+Host myalias
+  HostName myserver.mydomain.com
+  User myuser
+
+EOF
+exit 1
+fi
+
+wget --quiet -O - "${URL}" | ssh ${1%:} 'umask 077; test -d /usr/local/bin || mkdir -p /usr/local/bin; cat > /usr/local/bin/rsub; chmod a+rx /usr/local/bin/rsub' || exit 1
+
+cat <<EOF
+
+Installation complete!
+For more information run $0 --help
+
+EOF
