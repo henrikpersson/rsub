@@ -30,3 +30,12 @@ Run the following commands in Terminal, then restart Sublime Text 2:
 
     cd ~/Library/Application Support/Sublime Text 2/Packages
     git clone git://github.com/Drarok/rsub.git Rsub
+    
+## SSH tunneling
+
+Due to security reasons, rsub is only listening for local connections.
+
+Simply put this in your ~/.ssh/config to enable remote forwarding for your server(s):
+
+    Host example.com
+        RemoteForward 52698 127.0.0.1:52698
