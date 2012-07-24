@@ -16,7 +16,7 @@ cat <<EOF
 Usage: $0 [--bash] [user@]machine
 
 # Install Sublime Text plugin
-https://github.com/Drarok/rsub
+https://github.com/henrikpersson/rsub
 
 # Setup ssh for easy access
 edit ~/.ssh/config

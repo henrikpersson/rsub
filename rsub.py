@@ -93,9 +93,9 @@ class Session:
         SESSIONS[view.id()] = self
 
         # Bring sublime to front
-        if(os.name == 'posix'):
-            subl = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
-            subl.activate()
+        if(sublime.platform() == 'osx'):
+            subl_window = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
+            subl_window.activate()
 
     def close_connection(self, view):
         self.socket.shutdown(socket.SHUT_RDWR)
