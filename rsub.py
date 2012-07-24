@@ -5,6 +5,7 @@ import os
 import tempfile
 import socket
 from threading import Thread
+from ScriptingBridge import SBApplication
 
 '''
 Problems:
@@ -30,10 +31,10 @@ class Session:
         self.temp_path = None
 
     def parse_input(self, input_line):
-        if (input_line.strip() == "open" or self.parse_done == True):
+        if (input_line.strip() == "open" or self.parse_done is True):
             return
 
-        if(self.in_file == False):
+        if(self.in_file is False):
             input_line = input_line.strip()
             if (input_line == ""):
                 return
@@ -91,6 +92,11 @@ class Session:
         view = sublime.active_window().open_file(self.temp_path)
         SESSIONS[view.id()] = self
 
+        # Bring sublime to front
+        if(os.name == 'posix'):
+            subl = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
+            subl.activate()
+
     def close_connection(self, view):
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
@@ -125,7 +131,6 @@ def start_server():
 class RSubEventListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
         # Used during development to kill the server on save.
-        # TODO: How do we kill the server live?
         global server
         if(os.path.basename(view.file_name()) == "rsub.py"):
             say('Killing server...')
@@ -137,12 +142,6 @@ class RSubEventListener(sublime_plugin.EventListener):
             sess = SESSIONS[view.id()]
             sess.send_save()
             say('Saved ' + sess.env['display-name'])
-
-        if os.path.basename(view.file_name()) == 'rsub.py':
-            say('Starting new server instance')
-            global server
-            server = TCPServer((host, port), ConnectionHandler)
-            Thread(target=start_server, args=[]).start()
 
     def on_close(self, view):
         if(view.id() in SESSIONS):
