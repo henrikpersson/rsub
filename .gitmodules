@@ -3,4 +3,4 @@
 	url = https://github.com/aurora/rmate.git
 [submodule "rmate-ruby"]
 	path = rmate-ruby
-	url = https://github.com/avian/rmate.git
+	url = https://github.com/textmate/rmate.git
