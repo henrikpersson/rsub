@@ -5,7 +5,6 @@ import os
 import tempfile
 import socket
 from threading import Thread
-from ScriptingBridge import SBApplication
 
 '''
 Problems:
@@ -94,6 +93,7 @@ class Session:
 
         # Bring sublime to front
         if(sublime.platform() == 'osx'):
+            from ScriptingBridge import SBApplication
             subl_window = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
             subl_window.activate()
 
