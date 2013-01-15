@@ -9,7 +9,6 @@ from threading import Thread
 '''
 Problems:
 Double line breaks on Windows.
-If rmate opens two files with the same name in different directories, our temp files will be messed up.
 '''
 
 SESSIONS = {}
@@ -54,10 +53,14 @@ class Session:
         else:
             self.file += line
 
-    def send_close(self):
+    def close(self):
         self.socket.send("close\n")
         self.socket.send("token: " + self.env['token'] + "\n")
         self.socket.send("\n")
+        self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
+        os.unlink(self.temp_path)
+        os.rmdir(self.temp_dir)
 
     def send_save(self):
         self.socket.send("save\n")
@@ -72,9 +75,15 @@ class Session:
         self.socket.send("\n")
 
     def on_done(self):
-        # Create temp file
-        self.temp_path = os.path.join(tempfile.gettempdir(), os.path.basename(self.env['display-name']))
-
+        # Create a secure temporary directory, both for privacy and to allow
+        # multiple files with the same basename to be edited at once without
+        # overwriting each other.
+        try:
+            self.temp_dir = tempfile.mkdtemp(prefix='rsub-')
+        except OSError as e:
+            sublime.error_message('Failed to create rsub temporary directory! Error: %s' % e)
+            return
+        self.temp_path = os.path.join(self.temp_dir, os.path.basename(self.env['display-name']))
         try:
             temp_file = open(self.temp_path, "w+")
             temp_file.write(self.file.strip())
@@ -84,6 +93,10 @@ class Session:
             # Remove the file if it exists.
             if os.path.exists(self.temp_path):
                 os.remove(self.temp_path)
+            try:
+                os.rmdir(self.temp_dir)
+            except OSError:
+                pass
 
             sublime.error_message('Failed to write to temp file! Error: %s' % str(e))
 
@@ -96,11 +109,6 @@ class Session:
             from ScriptingBridge import SBApplication
             subl_window = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
             subl_window.activate()
-
-    def close_connection(self, view):
-        self.socket.shutdown(socket.SHUT_RDWR)
-        self.socket.close()
-        del SESSIONS[view.id()]
 
 
 class ConnectionHandler(SocketServer.BaseRequestHandler):
@@ -145,10 +153,8 @@ class RSubEventListener(sublime_plugin.EventListener):
 
     def on_close(self, view):
         if(view.id() in SESSIONS):
-            sess = SESSIONS[view.id()]
-            sess.send_close()
-            os.unlink(sess.temp_path)
-            sess.close_connection(view)
+            sess = SESSIONS.pop(view.id())
+            sess.close()
             say('Closed ' + sess.env['display-name'])
 
 
