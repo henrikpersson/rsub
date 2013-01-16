@@ -47,7 +47,7 @@ class Session:
             self.parse_file(input_line)
 
     def parse_file(self, line):
-        if(len(self.file) > self.file_size and line == ".\n"):
+        if(len(self.file) >= self.file_size and line == ".\n"):
             self.in_file = False
             self.parse_done = True
             sublime.set_timeout(self.on_done, 0)
@@ -77,7 +77,7 @@ class Session:
 
         try:
             temp_file = open(self.temp_path, "w+")
-            temp_file.write(self.file.strip())
+            temp_file.write(self.file[:self.file_size])
             temp_file.flush()
             temp_file.close()
         except IOError, e:
