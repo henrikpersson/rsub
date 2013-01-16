@@ -128,15 +128,13 @@ def start_server():
     server.serve_forever()
 
 
-class RSubEventListener(sublime_plugin.EventListener):
-    def on_pre_save(self, view):
-        # Used during development to kill the server on save.
-        global server
-        if(os.path.basename(view.file_name()) == "rsub.py"):
-            say('Killing server...')
-            server.shutdown()
-            server.server_close()
+def unload_handler():
+    say('Killing server...')
+    server.shutdown()
+    server.server_close()
 
+
+class RSubEventListener(sublime_plugin.EventListener):
     def on_post_save(self, view):
         if (view.id() in SESSIONS):
             sess = SESSIONS[view.id()]
