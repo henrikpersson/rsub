@@ -100,6 +100,10 @@ class Session:
 
             sublime.error_message('Failed to write to temp file! Error: %s' % str(e))
 
+        # create new window if needed
+        if len(sublime.windows()) == 0:
+            sublime.run_command("new_window")
+
         # Open it within sublime
         view = sublime.active_window().open_file(self.temp_path)
         SESSIONS[view.id()] = self
