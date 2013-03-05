@@ -1,10 +1,17 @@
-import sublime
+import sublime, sys
 import sublime_plugin
-import SocketServer
 import os
 import tempfile
 import socket
 from threading import Thread
+try:
+    import socketserver
+except ImportError:
+    import SocketServer as socketserver
+try:
+    from ScriptingBridge import SBApplication
+except ImportError:
+    SBApplication = None
 
 '''
 Problems:
@@ -12,10 +19,16 @@ Double line breaks on Windows.
 '''
 
 SESSIONS = {}
+server = None
 
+
+# in python 2 bytes() is an alias for str(), but not accepting the encoding parameter
+if int(sys.version[:3][0]) < 3:
+    def bytes(string,encoding=None):
+        return str(string)
 
 def say(msg):
-    print '[rsub] ' + msg
+    print ('[rsub] ' + msg)
 
 
 class Session:
@@ -54,25 +67,25 @@ class Session:
             self.file += line
 
     def close(self):
-        self.socket.send("close\n")
-        self.socket.send("token: " + self.env['token'] + "\n")
-        self.socket.send("\n")
+        self.socket.send(b"close\n")
+        self.socket.send(b"token: " + bytes(self.env['token'],encoding="utf8") + b"\n")
+        self.socket.send(b"\n")
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         os.unlink(self.temp_path)
         os.rmdir(self.temp_dir)
 
     def send_save(self):
-        self.socket.send("save\n")
-        self.socket.send("token: " + self.env['token'] + "\n")
+        self.socket.send(b"save\n")
+        self.socket.send(b"token: " + bytes(self.env['token'],encoding="utf8") + b"\n")
         temp_file = open(self.temp_path, "rU")
         new_file = ""
         for line in temp_file:
             new_file += line
         temp_file.close()
-        self.socket.send("data: " + str(len(new_file)) + "\n")
-        self.socket.send(new_file)
-        self.socket.send("\n")
+        self.socket.send(b"data: " + bytes(str(len(new_file)),encoding="utf8") + b"\n")
+        self.socket.send(bytes(new_file,encoding="utf8"))
+        self.socket.send(b"\n")
 
     def on_done(self):
         # Create a secure temporary directory, both for privacy and to allow
@@ -89,7 +102,7 @@ class Session:
             temp_file.write(self.file[:self.file_size])
             temp_file.flush()
             temp_file.close()
-        except IOError, e:
+        except IOError as e:
             # Remove the file if it exists.
             if os.path.exists(self.temp_path):
                 os.remove(self.temp_path)
@@ -105,18 +118,17 @@ class Session:
         SESSIONS[view.id()] = self
 
         # Bring sublime to front
-        if(sublime.platform() == 'osx'):
-            from ScriptingBridge import SBApplication
+        if(sublime.platform() == 'osx' and SBApplication):
             subl_window = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
             subl_window.activate()
 
 
-class ConnectionHandler(SocketServer.BaseRequestHandler):
+class ConnectionHandler(socketserver.BaseRequestHandler):
     def handle(self):
         say('New connection from ' + str(self.client_address))
 
         session = Session(self.request)
-        self.request.send("Sublime Text 2 (rsub plugin)\n")
+        self.request.send(b"Sublime Text 2 (rsub plugin)\n")
 
         socket_fd = self.request.makefile()
         while True:
@@ -128,7 +140,7 @@ class ConnectionHandler(SocketServer.BaseRequestHandler):
         say('Connection close.')
 
 
-class TCPServer(SocketServer.ThreadingTCPServer):
+class TCPServer(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
 
 
@@ -137,9 +149,11 @@ def start_server():
 
 
 def unload_handler():
+    global server
     say('Killing server...')
-    server.shutdown()
-    server.server_close()
+    if server:
+        server.shutdown()
+        server.server_close()
 
 
 class RSubEventListener(sublime_plugin.EventListener):
@@ -156,12 +170,23 @@ class RSubEventListener(sublime_plugin.EventListener):
             say('Closed ' + sess.env['display-name'])
 
 
-# Load settings
-settings = sublime.load_settings("rsub.sublime-settings")
-port = settings.get("port", 52698)
-host = settings.get("host", "localhost")
+def plugin_loaded():
+    global SESSIONS, server
 
-# Start server thread
-server = TCPServer((host, port), ConnectionHandler)
-Thread(target=start_server, args=[]).start()
-say('Server running on ' + host + ':' + str(port) + '...')
+    # Load settings
+    settings = sublime.load_settings("rsub.sublime-settings")
+    port = settings.get("port", 52698)
+    host = settings.get("host", "localhost")
+
+    # Start server thread
+    server = TCPServer((host, port), ConnectionHandler)
+    Thread(target=start_server, args=[]).start()
+    say('Server running on ' + host + ':' + str(port) + '...')
+
+
+
+# call the plugin_loaded() function if running in sublime text 2
+if (int(sublime.version())<3000):
+    plugin_loaded()
+
+
