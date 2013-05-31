@@ -125,6 +125,10 @@ class Session:
         if(sublime.platform() == 'osx' and SBApplication):
             subl_window = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
             subl_window.activate()
+        elif(sublime.platform() == 'linux'):
+            import subprocess
+            subprocess.call("wmctrl -xa 'sublime_text.sublime-text-2'", shell=True)
+
 
 
 class ConnectionHandler(socketserver.BaseRequestHandler):
