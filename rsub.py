@@ -22,11 +22,6 @@ SESSIONS = {}
 server = None
 
 
-# in python 2 bytes() is an alias for str(), but not accepting the encoding parameter
-if int(sys.version[:3][0]) < 3:
-    def bytes(string,encoding=None):
-        return str(string)
-
 def say(msg):
     print ('[rsub] ' + msg)
 
@@ -34,7 +29,7 @@ def say(msg):
 class Session:
     def __init__(self, socket):
         self.env = {}
-        self.file = ""
+        self.file = b""
         self.file_size = 0
         self.in_file = False
         self.parse_done = False
@@ -42,11 +37,11 @@ class Session:
         self.temp_path = None
 
     def parse_input(self, input_line):
-        if (input_line.strip() == "open" or self.parse_done is True):
+        if (input_line.strip() == b"open" or self.parse_done is True):
             return
 
         if(self.in_file is False):
-            input_line = input_line.strip()
+            input_line = input_line.decode("utf8").strip()
             if (input_line == ""):
                 return
             k, v = input_line.split(":", 1)
@@ -59,7 +54,7 @@ class Session:
             self.parse_file(input_line)
 
     def parse_file(self, line):
-        if(len(self.file) >= self.file_size and line == ".\n"):
+        if(len(self.file) >= self.file_size and line == b".\n"):
             self.in_file = False
             self.parse_done = True
             sublime.set_timeout(self.on_done, 0)
@@ -68,7 +63,7 @@ class Session:
 
     def close(self):
         self.socket.send(b"close\n")
-        self.socket.send(b"token: " + bytes(self.env['token'],encoding="utf8") + b"\n")
+        self.socket.send(b"token: " + self.env['token'].encode("utf8") + b"\n")
         self.socket.send(b"\n")
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
@@ -77,14 +72,12 @@ class Session:
 
     def send_save(self):
         self.socket.send(b"save\n")
-        self.socket.send(b"token: " + bytes(self.env['token'],encoding="utf8") + b"\n")
-        temp_file = open(self.temp_path, "rU")
-        new_file = ""
-        for line in temp_file:
-            new_file += line
+        self.socket.send(b"token: " + self.env['token'].encode("utf8") + b"\n")
+        temp_file = open(self.temp_path, "rb")
+        new_file = temp_file.read()
         temp_file.close()
-        self.socket.send(b"data: " + bytes(str(len(new_file)),encoding="utf8") + b"\n")
-        self.socket.send(bytes(new_file,encoding="utf8"))
+        self.socket.send(b"data: " + str(len(new_file)).encode("utf8") + b"\n")
+        self.socket.send(new_file)
         self.socket.send(b"\n")
 
     def on_done(self):
@@ -98,7 +91,7 @@ class Session:
             return
         self.temp_path = os.path.join(self.temp_dir, os.path.basename(self.env['display-name']))
         try:
-            temp_file = open(self.temp_path, "w+")
+            temp_file = open(self.temp_path, "wb+")
             temp_file.write(self.file[:self.file_size])
             temp_file.flush()
             temp_file.close()
@@ -138,7 +131,7 @@ class ConnectionHandler(socketserver.BaseRequestHandler):
         session = Session(self.request)
         self.request.send(b"Sublime Text 2 (rsub plugin)\n")
 
-        socket_fd = self.request.makefile()
+        socket_fd = self.request.makefile("rb")
         while True:
             line = socket_fd.readline()
             if(len(line) == 0):
