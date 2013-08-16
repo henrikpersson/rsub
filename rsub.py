@@ -96,7 +96,7 @@ class Session:
         except OSError as e:
             sublime.error_message('Failed to create rsub temporary directory! Error: %s' % e)
             return
-        self.temp_path = os.path.join(self.temp_dir, os.path.basename(self.env['display-name']))
+        self.temp_path = os.path.join(self.temp_dir, os.path.basename(self.env['display-name'].split(':')[-1]))
         try:
             temp_file = open(self.temp_path, "w+")
             temp_file.write(self.file[:self.file_size])
