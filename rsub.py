@@ -44,10 +44,14 @@ class Session:
             input_line = input_line.decode("utf8").strip()
             if (input_line == ""):
                 return
+            if (input_line == "."):
+                self.parse_file(b".\n")
+                return
             k, v = input_line.split(":", 1)
-            if(k == "data"):
+            if (k == "data"):
                 self.file_size = int(v)
-                self.in_file = True
+                if len(self.env) > 1:
+                    self.in_file = True
             else:
                 self.env[k] = v.strip()
         else:
