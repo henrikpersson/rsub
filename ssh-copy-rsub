@@ -7,7 +7,7 @@ URL="https://raw.github.com/textmate/rmate/master/rmate"
 
 if [ "$#" -gt 1 ] || [ "$1" = "-b" ] || [ "$1" = "--bash" ]; then
 	shift
-	URL="https://raw.github.com/aurora/rmate/master/rmate.sh"
+	URL="https://raw.github.com/aurora/rmate/master/rmate"
 fi
 
 if [ "$#" -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
