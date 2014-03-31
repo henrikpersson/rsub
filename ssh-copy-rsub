@@ -3,11 +3,11 @@
 # Shell script to install rsub on the remove server so we can open shell scripts locally.
 # Author: Leon Radley (http://github.com/leon)
 
-URL="https://raw.github.com/avian/rmate/master/rmate"
+URL="https://raw.github.com/textmate/rmate/master/rmate"
 
 if [ "$#" -gt 1 ] || [ "$1" = "-b" ] || [ "$1" = "--bash" ]; then
 	shift
-	URL="https://raw.github.com/aurora/rmate/master/rmate.sh"
+	URL="https://raw.github.com/aurora/rmate/master/rmate"
 fi
 
 if [ "$#" -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
