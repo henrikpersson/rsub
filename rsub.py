@@ -116,9 +116,14 @@ class Session:
 
         # Open it within sublime
         view = sublime.active_window().open_file(self.temp_path)
+
+        # Add the file metadata to the view's settings
+        # This is mostly useful to obtain the path of this file on the server
+        view.settings().set('rsub',self.env)
+
+        # Add the session to the global list
         SESSIONS[view.id()] = self
 
-        # Bring sublime to front
         # Bring sublime to front
         if(sublime.platform() == 'osx'):
             if(SBApplication):
