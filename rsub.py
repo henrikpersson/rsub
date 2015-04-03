@@ -112,7 +112,7 @@ class Session:
             sublime.error_message('Failed to write to temp file! Error: %s' % str(e))
 
         # create new window if needed
-        if len(sublime.windows()) == 0:
+        if len(sublime.windows()) == 0 or "new" in self.env:
             sublime.run_command("new_window")
 
         # Open it within sublime
