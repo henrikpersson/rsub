@@ -1,4 +1,4 @@
-import sublime, sys
+import sublime
 import sublime_plugin
 import os
 import tempfile
@@ -23,7 +23,7 @@ server = None
 
 
 def say(msg):
-    print ('[rsub] ' + msg)
+    print('[rsub] ' + msg)
 
 
 class Session:
@@ -93,7 +93,8 @@ class Session:
         except OSError as e:
             sublime.error_message('Failed to create rsub temporary directory! Error: %s' % e)
             return
-        self.temp_path = os.path.join(self.temp_dir, os.path.basename(self.env['display-name'].split(':')[-1]))
+        self.temp_path = os.path.join(self.temp_dir,
+                                      os.path.basename(self.env['display-name'].split(':')[-1]))
         try:
             temp_file = open(self.temp_path, "wb+")
             temp_file.write(self.file[:self.file_size])
@@ -119,7 +120,7 @@ class Session:
 
         # Add the file metadata to the view's settings
         # This is mostly useful to obtain the path of this file on the server
-        view.settings().set('rsub',self.env)
+        view.settings().set('rsub', self.env)
 
         # Add the session to the global list
         SESSIONS[view.id()] = self
@@ -130,11 +131,11 @@ class Session:
                 subl_window = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
                 subl_window.activate()
             else:
-                os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Sublime Text" to true' ''')
+                os.system('''/usr/bin/osascript -e 'tell app "Finder" to
+                             set frontmost of process "Sublime Text" to true' ''')
         elif(sublime.platform() == 'linux'):
             import subprocess
             subprocess.call("wmctrl -xa 'sublime_text.sublime-text-2'", shell=True)
-
 
 
 class ConnectionHandler(socketserver.BaseRequestHandler):
@@ -197,10 +198,6 @@ def plugin_loaded():
     Thread(target=start_server, args=[]).start()
     say('Server running on ' + host + ':' + str(port) + '...')
 
-
-
 # call the plugin_loaded() function if running in sublime text 2
-if (int(sublime.version())<3000):
+if (int(sublime.version())< 3000):
     plugin_loaded()
-
-
