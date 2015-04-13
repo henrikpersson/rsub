@@ -4,3 +4,6 @@
 [submodule "rmate-ruby"]
 	path = rmate-ruby
 	url = https://github.com/textmate/rmate.git
+[submodule "rmate-js"]
+	path = rmate-js
+	url = git@github.com:jrnewell/jmate.git
