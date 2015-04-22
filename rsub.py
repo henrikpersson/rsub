@@ -131,8 +131,8 @@ class Session:
                 subl_window = SBApplication.applicationWithBundleIdentifier_("com.sublimetext.2")
                 subl_window.activate()
             else:
-                os.system('''/usr/bin/osascript -e 'tell app "Finder" to
-                             set frontmost of process "Sublime Text" to true' ''')
+                os.system("/usr/bin/osascript -e '%s'" %
+                          'tell app "Finder" to set frontmost of process "Sublime Text" to true')
         elif(sublime.platform() == 'linux'):
             import subprocess
             subprocess.call("wmctrl -xa 'sublime_text.sublime-text-2'", shell=True)
