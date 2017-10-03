@@ -28,7 +28,7 @@ On Mac OS X, this is located at
 
 Run the following commands in Terminal, then restart Sublime Text 2:
 
-    cd ~/Library/Application Support/Sublime Text 2/Packages
+    cd ~/Library/Application\ Support/Sublime\ Text 2/Packages
     git clone git://github.com/henrikpersson/rsub.git rsub
     
 ## SSH tunneling
